@@ -11,8 +11,7 @@ export default function JQueryPage() {
   }, []);
 
   const initializeJQuery = () => {
-    const $ = (window as any).$;
-    if (!$) return;
+    if (!window.$) return;
 
     $(document).on('click', '.delete-btn', function (this: HTMLElement) {
       const $li = $(this).parent();
@@ -28,7 +27,7 @@ export default function JQueryPage() {
           .text('Please enter an item')
           .fadeIn()
           .delay(2000)
-          .fadeOut();
+          .fadeOut(300);
       } else {
         const listItem = $(`
           <li class="flex justify-between items-center px-4 py-2 bg-white border-b last:border-b-0">
@@ -44,8 +43,8 @@ export default function JQueryPage() {
       }
     });
 
-    $('#itemInput').on('keypress', function (e: any) {
-      if (e.which === 13) $('#addBtn').click();
+    $('#itemInput').on('keypress', function (e: KeyboardEvent) {
+      if (e.key === 'Enter') $('#addBtn').trigger('click');
     });
   };
 
@@ -56,21 +55,29 @@ export default function JQueryPage() {
       </h1>
 
       <div className="flex mb-4">
-        <input id="itemInput" type="text"
+        <input 
+          id="itemInput" 
+          type="text"
           placeholder="Enter an item..."
           className="flex-1 border-2 border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-300"
         />
-        <button id="addBtn"
-          className="ml-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+        <button 
+          id="addBtn"
+          className="ml-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+        >
           Add
         </button>
       </div>
 
-      <div id="errorMessage" className="hidden text-red-700 bg-red-100 border border-red-200 rounded px-3 py-2 mb-4"/>
+      <div 
+        id="errorMessage" 
+        className="hidden text-red-700 bg-red-100 border border-red-200 rounded px-3 py-2 mb-4"
+      />
 
-      <ul id="itemList" className="bg-gray-100 rounded border border-gray-300 min-h-[200px]">
-
-      </ul>
+      <ul 
+        id="itemList" 
+        className="bg-gray-100 rounded border border-gray-300 min-h-[200px]"
+      />
     </div>
   );
 }

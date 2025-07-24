@@ -47,7 +47,6 @@ export const taskApi = {
 
   // Move task to different column and reorder
   moveTask: async (taskId: number, newColumn: Column, newOrder: number): Promise<void> => {
-    // First, get all tasks to handle reordering
     const allTasks = await taskApi.getTasks();
     const task = allTasks.find(t => t.id === taskId);
     
@@ -56,22 +55,18 @@ export const taskApi = {
     const oldColumn = task.column;
     const oldOrder = task.order;
 
-    // If moving to same column, handle reordering
     if (oldColumn === newColumn) {
       const columnTasks = allTasks.filter(t => t.column === newColumn && t.id !== taskId);
       
-      // Update orders for tasks in between
-      const updates: any[] = [];
+      const updates: Promise<Task>[] = [];
       
-      if (newOrder > oldOrder) {
-        // Moving down - shift tasks up
+      if (newOrder > oldOrder) {// Moving down
         columnTasks
           .filter(t => t.order > oldOrder && t.order <= newOrder)
           .forEach(t => {
             updates.push(taskApi.updateTask(t.id, { order: t.order - 1 }));
           });
-      } else {
-        // Moving up - shift tasks down
+      } else {// Moving up
         columnTasks
           .filter(t => t.order >= newOrder && t.order < oldOrder)
           .forEach(t => {
@@ -79,19 +74,21 @@ export const taskApi = {
           });
       }
 
-      await Promise.all(updates);
-      await taskApi.updateTask(taskId, { order: newOrder });
-    } else {
-      // Moving to different column
+      try {
+        await Promise.all(updates);
+        await taskApi.updateTask(taskId, { order: newOrder });
+      } catch (error) {
+        console.error("Failed to update tasks:", error);
+      }
+    } else { // Moving to different column
       const oldColumnTasks = allTasks.filter(t => t.column === oldColumn && t.order > oldOrder);
       const newColumnTasks = allTasks.filter(t => t.column === newColumn && t.order >= newOrder);
       
-      // Shift old column tasks up
+      // These are already properly typed through TypeScript inference
       const oldColumnUpdates = oldColumnTasks.map(t => 
         taskApi.updateTask(t.id, { order: t.order - 1 })
       );
       
-      // Shift new column tasks down
       const newColumnUpdates = newColumnTasks.map(t => 
         taskApi.updateTask(t.id, { order: t.order + 1 })
       );
