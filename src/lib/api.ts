@@ -46,7 +46,16 @@ export const taskApi = {
   },
 
   // Move task to different column and reorder
-  moveTask: async (taskId: number, newColumn: Column, newOrder: number): Promise<void> => {
+  moveTask: async (taskId: number, newColumn: Column, newOrder: number): Promise<Task[] | void> => {
+    try {
+      const resp = await api.post('/reorder', { taskId, newColumn, newOrder });
+      if (Array.isArray(resp.data)) {
+        return resp.data as Task[];
+      }
+    } catch (err) {
+      console.warn('Reorder endpoint not available, falling back to multi-PATCH', err);
+    }
+
     const allTasks = await taskApi.getTasks();
     const task = allTasks.find(t => t.id === taskId);
     
@@ -79,22 +88,27 @@ export const taskApi = {
         await taskApi.updateTask(taskId, { order: newOrder });
       } catch (error) {
         console.error("Failed to update tasks:", error);
+        throw error;
       }
     } else { // Moving to different column
       const oldColumnTasks = allTasks.filter(t => t.column === oldColumn && t.order > oldOrder);
       const newColumnTasks = allTasks.filter(t => t.column === newColumn && t.order >= newOrder);
       
-      // These are already properly typed through TypeScript inference
       const oldColumnUpdates = oldColumnTasks.map(t => 
         taskApi.updateTask(t.id, { order: t.order - 1 })
       );
-      
-      const newColumnUpdates = newColumnTasks.map(t => 
+
+      const newColumnUpdates = newColumnTasks.map(t =>
         taskApi.updateTask(t.id, { order: t.order + 1 })
       );
-      
-      await Promise.all([...oldColumnUpdates, ...newColumnUpdates]);
-      await taskApi.updateTask(taskId, { column: newColumn, order: newOrder });
+
+      try {
+        await Promise.all([...oldColumnUpdates, ...newColumnUpdates]);
+        await taskApi.updateTask(taskId, { column: newColumn, order: newOrder });
+      } catch (error) {
+        console.error("Failed to update tasks:", error);
+        throw error;
+      }
     }
   }
 };

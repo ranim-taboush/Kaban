@@ -18,29 +18,22 @@
       "id": 3,
       "title": "Create API endpoints",
       "description": "RESTful API for task management",
-      "column": "review",
+      "column": "done",
       "order": 0
     },
     {
       "id": 4,
       "title": "Write unit tests",
       "description": "Test coverage for all components",
-      "column": "done",
-      "order": 0
+      "column": "backlog",
+      "order": 1
     },
     {
       "id": 5,
       "title": "Mobile responsive design",
       "description": "Ensure app works on all screen sizes",
-      "column": "in-progress",
-      "order": 1
-    },
-    {
-      "title": "Testing new data adding",
-      "description": "too easy",
-      "column": "done",
-      "order": 1,
-      "id": 6
+      "column": "review",
+      "order": 0
     }
   ]
 }
